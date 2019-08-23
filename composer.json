@@ -1,0 +1,10 @@
+{
+    "name": "glitchbl/image",
+    "description": "Resize and thumb images",
+    "require": {},
+    "autoload": {
+        "psr-4": {
+            "Glitchbl\\": "src/"
+        }
+    }
+}
