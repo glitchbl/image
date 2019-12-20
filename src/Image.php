@@ -74,6 +74,22 @@ class Image
 		return $this->extension;
 	}
 
+	/**
+	 * @return int
+	 */
+	public function getWidth()
+	{
+		return $this->image_width;
+	}
+
+	/**
+	 * @return int
+	 */
+	public function getHeight()
+	{
+		return $this->image_height;
+	}
+
     /**
      * @param string $destination Resized image location
      * @param string $extension Image extention (PNG or JPG)
