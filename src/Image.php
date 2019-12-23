@@ -13,27 +13,27 @@ class Image
     /**
      * @var mixed Image resource
      */
-	private $image_resource = null;
+	protected $image_resource = null;
 
     /**
      * @var int Image width
      */
-	private $image_width;
+	protected $image_width;
 
     /**
      * @var int Image height
      */
-	private $image_height;
+	protected $image_height;
 
     /**
      * @var string Image extension
      */
-	private $extension;
+	protected $extension;
 
     /**
      * @var string Image path
      */
-    private $file;
+    protected $file;
 
     /**
      * @param string $file Image path
@@ -41,7 +41,7 @@ class Image
 	public function __construct($file)
 	{
 		if (!is_file($file))
-			throw new Exception("{$file} is not a file.");
+			throw new Exception("{$file} is not a file");
 			
 		list($image_width, $image_height, $image_type) = getimagesize($file);
 
@@ -56,7 +56,7 @@ class Image
 	            break;
 	        case IMAGETYPE_PNG:
 	            $this->image_resource = imagecreatefrompng($file);
-	            $this->extension = self::png;
+	            $this->extension = self::PNG;
 	            break;
 	    }
 
@@ -75,28 +75,21 @@ class Image
 	}
 
 	/**
-	 * @return int
+	 * Read-only getters
+	 * @param string $name
+	 * @return mixed
 	 */
-	public function getWidth()
+	public function __get($name)
 	{
-		return $this->image_width;
-	}
-
-	/**
-	 * @return int
-	 */
-	public function getHeight()
-	{
-		return $this->image_height;
+		return $this->{$name};
 	}
 
     /**
-     * @param string $destination Resized image location
-     * @param string $extension Image extention (PNG or JPG)
      * @param int $max_width Max resized image width
      * @param int $max_height Max resized image height
+	 * @return mixed Resource
      */
-	public function resize($destination, $extension = self::PNG, $max_width = 1000, $max_height = 1000)
+	protected function _resize($max_width = 1000, $max_height = 1000)
 	{
 	    $destination_width = $this->image_width;
 	    $destination_height = $this->image_height;
@@ -130,9 +123,35 @@ class Image
 	    imagefill($destination_resource, 0, 0, $white);
 	    imagecopyresampled($destination_resource, $this->image_resource, 0, 0, 0, 0, $destination_width, $destination_height, $this->image_width, $this->image_height);
 
+		return $destination_resource;
+	}
+
+    /**
+     * @param string $destination Resized image location
+     * @param string $extension Image extention (PNG or JPG)
+     * @param int $max_width Max resized image width
+     * @param int $max_height Max resized image height
+     */
+	public function resize($destination, $extension = self::PNG, $max_width = 1000, $max_height = 1000)
+	{
+		$destination_resource = $this->_resize($max_width, $max_height);
         $this->save($destination_resource, $extension, $destination);
-		
-	    imagedestroy($destination_resource); 
+	    imagedestroy($destination_resource);
+	}
+
+    /**
+     * @param int $max_width Max resized image width
+     * @param int $max_height Max resized image height
+     */
+	public function resizeSelf($max_width = 1000, $max_height = 1000)
+	{
+		$resource = $this->_resize($max_width, $max_height);
+		$width = imagesx($resource);
+		$height = imagesy($resource);
+		imagedestroy($this->image_resource);
+		$this->image_resource = $resource;
+		$this->image_width = $width;
+		$this->image_height = $height;
 	}
 
     /**
@@ -185,7 +204,7 @@ class Image
      * @param string $extension Image extention (PNG or JPG)
      * @param string $destination Image location
      */
-    private function save($resource, $extension, $destination)
+    protected function save($resource, $extension, $destination)
     {
 		if ($extension == 'png') {
 	    	imagepng($resource, $destination, 6);
