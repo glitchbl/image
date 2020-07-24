@@ -8,8 +8,8 @@ class Image
 {
     const   GIF = 'gif',
             PNG = 'png',
-            JPG = 'jpg';
-
+			JPG = 'jpg';
+			
     /**
      * @var mixed Image resource
      */
@@ -43,7 +43,7 @@ class Image
 		if (!is_file($file))
 			throw new Exception("{$file} is not a file");
 			
-		list($image_width, $image_height, $image_type) = getimagesize($file);
+		list(, , $image_type) = getimagesize($file);
 
 	    switch ($image_type) {
 	        case IMAGETYPE_GIF:
@@ -58,10 +58,39 @@ class Image
 	            $this->image_resource = imagecreatefrompng($file);
 	            $this->extension = self::PNG;
 	            break;
-	    }
+		}
+		
+        $exif = exif_read_data($file);
+        $orientation = isset($exif['Orientation'])? $exif['Orientation']: 0;
 
-	    $this->image_width = $image_width;
-	    $this->image_height = $image_height;
+        switch ($orientation) {
+            case 2:
+                imageflip($this->image_resource, IMG_FLIP_HORIZONTAL);
+                break;
+            case 3:
+                $this->image_resource = imagerotate($this->image_resource, 180, 0);
+                break;
+            case 4:
+                imageflip($this->image_resource, IMG_FLIP_VERTICAL);
+                break;
+            case 5:
+                $this->image_resource = imagerotate($this->image_resource, -90, 0);
+                imageflip($this->image_resource, IMG_FLIP_HORIZONTAL);
+                break;
+            case 6:
+                $this->image_resource = imagerotate($this->image_resource, -90, 0);
+                break;
+            case 7:
+                $this->image_resource = imagerotate($this->image_resource, 90, 0);
+                imageflip($this->image_resource, IMG_FLIP_HORIZONTAL);
+                break;
+            case 8:
+                $this->image_resource = imagerotate($this->image_resource, 90, 0); 
+                break;
+        }
+
+	    $this->image_width = imagesx($this->image_resource);
+	    $this->image_height = imagesy($this->image_resource);
 
 	    $this->file = $file;
 	}
@@ -152,6 +181,15 @@ class Image
 		$this->image_resource = $resource;
 		$this->image_width = $width;
 		$this->image_height = $height;
+	}
+
+    /**
+     * @param int $type Filter type
+     * @param void
+     */
+	public function filter($type)
+	{
+		imagefilter($this->image_resource, $type);
 	}
 
     /**
