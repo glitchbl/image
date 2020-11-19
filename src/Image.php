@@ -60,7 +60,7 @@ class Image
 	            break;
 		}
 		
-        $exif = exif_read_data($file);
+        $exif = @exif_read_data($file); // TEMP FIX
         $orientation = isset($exif['Orientation'])? $exif['Orientation']: 0;
 
         switch ($orientation) {
