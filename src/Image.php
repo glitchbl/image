@@ -197,8 +197,11 @@ class Image
      * @param int $thumb_width Thumb width
      * @param int $thumb_height Thumb height
      * @param string $extension Image extention (PNG or JPG)
+     * @param int $offset_x Thumb X Offset
+     * @param int $offset_x Thumb Y Offset
+	 * @return void
      */
-	public function thumb($destination, $thumb_width, $thumb_height, $extension = self::PNG)
+	public function thumb($destination, $thumb_width, $thumb_height, $extension = self::PNG, $offset_x = 0, $offset_y = 0)
 	{
 	    $cut_width = $this->image_width;
 	    $cut_height = $this->image_height;
@@ -223,9 +226,13 @@ class Image
 	    	$cut_width = (int)($ratio * $cut_width);
 	    }
 
-	    $start_x = round(($this->image_width / 2) - ($cut_width / 2));
+	    $start_x = round(($this->image_width / 2) - ($cut_width / 2) + $offset_x);
+		if ($start_x > $this->image_width)
+			$start_x = $this->image_width - $cut_width;
 
-	    $start_y = round(($this->image_height / 2) - ($cut_height / 2));
+	    $start_y = round(($this->image_height / 2) - ($cut_height / 2) + $offset_y);
+		if ($start_y > $this->image_height)
+			$start_y = $this->image_height - $cut_height;
 
 	    $destination_resource = imagecreatetruecolor($thumb_width, $thumb_height);
 	    $white = imagecolorallocate($destination_resource, 255, 255, 255);
