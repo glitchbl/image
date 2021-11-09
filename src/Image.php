@@ -227,11 +227,11 @@ class Image
 	    }
 
 	    $start_x = round(($this->image_width / 2) - ($cut_width / 2) + $offset_x);
-		if ($start_x + $cut_width > $this->image_width)
+		if ($start_x < 0 || $start_x + $cut_width > $this->image_width)
 			$start_x = $this->image_width - $cut_width;
 
 	    $start_y = round(($this->image_height / 2) - ($cut_height / 2) + $offset_y);
-		if ($start_y + $cut_height > $this->image_height)
+		if ($start_y < 0 || $start_y + $cut_height > $this->image_height)
 			$start_y = $this->image_height - $cut_height;
 
 	    $destination_resource = imagecreatetruecolor($thumb_width, $thumb_height);
