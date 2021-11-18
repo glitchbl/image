@@ -229,7 +229,7 @@ class Image
 	    $start_x = round(($this->image_width / 2) - ($cut_width / 2) + $offset_x);
             if ($start_x < 0)
                  $start_x = 0;
-            elseif ($start_x + $cut_width > $this->image_width;
+            elseif ($start_x + $cut_width > $this->image_width)
                  $start_x = $this->image_width - $cut_width;
 
 	    $start_y = round(($this->image_height / 2) - ($cut_height / 2) + $offset_y);
