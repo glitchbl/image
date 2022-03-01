@@ -183,15 +183,25 @@ class Image
     }
 
     /**
-     * @param static $image
+     * @param mixed $image
      * @param int $x
      * @param int $y
      * @param array $align
      */
     public function addImage($image, $x = 0, $y = 0, $align = ['top', 'left'])
     {
+        if ($image instanceof self) {
+            $resource = $image->resource;
+            $width = $image->width;
+            $height = $image->height;
+        } else {
+            $resource = $image;
+            $width = imagesx($image);
+            $height = imagesy($image);
+        }
+        
         if ($align[1] == 'center') {
-            $newX = round(($this->width - $image->width) / 2);
+            $newX = round(($this->width - $width) / 2);
         } elseif ($align[1] == 'right') {
             $newX = $this->width - $x;
         } else {
@@ -199,9 +209,9 @@ class Image
         }
 
         if ($align[0] == 'center') {
-            $newY = round(($this->height - $image->height) / 2);
+            $newY = round(($this->height - $height) / 2);
         } elseif ($align[0] == 'bottom') {
-            $newY = $this->height - $image->height - $y;
+            $newY = $this->height - $height - $y;
         } else {
             $newY = $y;
         }
@@ -212,7 +222,7 @@ class Image
 
         imagecopy($newImageResource, $this->resource, 0, 0, 0, 0, $this->width, $this->height);
 
-        imagecopy($newImageResource, $image->resource, $newX, $newY, 0, 0, $image->width, $image->height);
+        imagecopy($newImageResource, $resource, $newX, $newY, 0, 0, $width, $height);
 
         imagedestroy($this->resource);
         $this->resource = $newImageResource;
