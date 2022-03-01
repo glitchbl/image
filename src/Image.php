@@ -203,7 +203,7 @@ class Image
         if ($align[1] == 'center') {
             $newX = round(($this->width - $width) / 2);
         } elseif ($align[1] == 'right') {
-            $newX = $this->width - $x;
+            $newX = $this->width - $width - $x;
         } else {
             $newX = $x;
         }
