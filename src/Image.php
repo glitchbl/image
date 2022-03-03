@@ -9,7 +9,7 @@ class Image
     const   GIF = 'gif',
             PNG = 'png',
             JPG = 'jpg';
-            
+
     /**
      * @var mixed Image resource
      */
@@ -42,8 +42,8 @@ class Image
     {
         if (!is_file($file))
             throw new Exception("{$file} is not a file");
-            
-        list(, , $image_type) = getimagesize($file);
+
+        list(,, $image_type) = getimagesize($file);
 
         switch ($image_type) {
             case IMAGETYPE_GIF:
@@ -61,9 +61,9 @@ class Image
                 imageSaveAlpha($this->resource, true);
                 break;
         }
-        
+
         $exif = @exif_read_data($file);
-        $orientation = isset($exif['Orientation'])? $exif['Orientation']: 0;
+        $orientation = isset($exif['Orientation']) ? $exif['Orientation'] : 0;
 
         switch ($orientation) {
             case 2:
@@ -87,7 +87,7 @@ class Image
                 imageflip($this->resource, IMG_FLIP_HORIZONTAL);
                 break;
             case 8:
-                $this->resource = imagerotate($this->resource, 90, 0); 
+                $this->resource = imagerotate($this->resource, 90, 0);
                 break;
         }
 
@@ -162,16 +162,18 @@ class Image
             throw new Exception("{$fontPath} does not exist");
 
         $bbox = imagettfbbox($fontSize, 0, $fontPath, $text);
+        $width = $this->width;
+        $height = 0 - $bbox[5] + $bbox[1] + $padding * 2;
 
-        $imageText = imagecreatetruecolor($this->width, 0 - $bbox[5] + $bbox[1] + $padding * 2);
+        $imageText = imagecreatetruecolor($width, $height);
 
         $imageBgColor = imagecolorallocatealpha($imageText, $bgColor[0], $bgColor[1], $bgColor[2], $bgColor[3]);
         imagefill($imageText, 0, 0, $imageBgColor);
 
         if ($align[1] == 'center') {
-            $newX = round(($this->width - $bbox[2]) / 2);
+            $newX = round(($width - $bbox[2]) / 2);
         } elseif ($align[1] == 'right') {
-            $newX = $this->width - $x;
+            $newX = $width - $bbox[2] - $x;
         } else {
             $newX = $x;
         }
@@ -179,7 +181,13 @@ class Image
         imagettftext($imageText, $fontSize, 0, $newX, 0 - $bbox[5] + $padding, imagecolorallocate($imageText, $textColor[0], $textColor[1], $textColor[2]), $fontPath, $text);
 
         $this->addImage($imageText, 0, $y, $align);
+
+        $width = imagesx($imageText);
+        $height = imagesy($imageText);
+
         imagedestroy($imageText);
+
+        return [$width, $height];
     }
 
     /**
@@ -199,7 +207,7 @@ class Image
             $width = imagesx($image);
             $height = imagesy($image);
         }
-        
+
         if ($align[1] == 'center') {
             $newX = round(($this->width - $width) / 2);
         } elseif ($align[1] == 'right') {
