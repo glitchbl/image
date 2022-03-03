@@ -110,7 +110,7 @@ class Image
     /**
      * @return mixed Image
      */
-    function clone()
+    public function clone()
     {
         $width = imagesx($this->resource);
         $height = imagesy($this->resource);
@@ -241,7 +241,7 @@ class Image
      * @param int $maxHeight Max resized image height
      * @return void
      */
-    protected function resize($maxWidth = 1000, $maxHeight = 1000)
+    public function resize($maxWidth = 1000, $maxHeight = 1000)
     {
         $dstWidth = $this->width;
         $dstHeight = $this->height;
