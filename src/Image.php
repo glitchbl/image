@@ -4,6 +4,14 @@ namespace Glitchbl;
 
 use Exception;
 
+/**
+ * @property-read mixed $resource
+ * @property-read int $width
+ * @property-read int $height
+ * @property-read string $extension
+ * @property-read string $file
+ * @property-read string $bytes
+ */
 class Image
 {
     const   GIF = 'gif',
