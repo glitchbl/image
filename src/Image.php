@@ -65,8 +65,6 @@ class Image
             case IMAGETYPE_PNG:
                 $this->resource = imagecreatefrompng($file);
                 $this->extension = self::PNG;
-                imageAlphaBlending($this->resource, true);
-                imageSaveAlpha($this->resource, true);
                 break;
         }
 
@@ -103,24 +101,6 @@ class Image
         $this->height = imagesy($this->resource);
 
         $this->file = $file;
-    }
-
-    /**
-     * @param string|null $extension
-     * @return string
-     */
-    protected function getBytes($extension = null)
-    {
-        $extension = $extension ?? $this->extension;
-
-        ob_start();
-
-        if ($extension == static::PNG)
-            imagepng($this->resource, null, 6);
-        else
-            imagejpeg($this->resource);
-
-        return ob_get_clean();
     }
 
     /**
@@ -402,17 +382,40 @@ class Image
     }
 
     /**
+     * @param string $destination Image location
+     * @param string $extension Image extention (PNG or JPG)
+     */
+    protected function _save($destination, $extension)
+    {
+        if ($extension == static::PNG) {
+            imagesavealpha($this->resource, true);
+            imagepng($this->resource, $destination, 6);
+        } else {
+            imagejpeg($this->resource, $destination);
+        }
+    }
+
+    /**
      * @param string|null $destination Image location
      * @param string|null $extension Image extention (PNG or JPG)
      */
     public function save($destination = null, $extension = null)
     {
+        $this->_save($destination ?? $this->file, $extension ?? $this->extension);
+    }
+
+    /**
+     * @param string|null $extension
+     * @return string
+     */
+    protected function getBytes($extension = null)
+    {
         $extension = $extension ?? $this->extension;
 
-        if ($extension == static::PNG) {
-            imagepng($this->resource, $destination ?? $this->file, 6);
-        } else {
-            imagejpeg($this->resource, $destination ?? $this->file);
-        }
+        ob_start();
+
+        $this->_save(null, $extension);
+
+        return ob_get_clean();
     }
 }
