@@ -104,6 +104,57 @@ class Image
     }
 
     /**
+     * @param int $width
+     * @param int $height
+     * @return \GdImage
+     */
+    protected function createTransparentResource($width, $height)
+    {
+        $newImageResource = imagecreatetruecolor($width, $height);
+        $transparentColor = imagecolorallocatealpha($newImageResource, 0, 0, 0, 127);
+        imagefill($newImageResource, 0, 0, $transparentColor);
+        return $newImageResource;
+    }
+
+    /**
+     * @param string $destination Image location
+     * @param string $extension Image extention (PNG or JPG)
+     */
+    protected function _save($destination, $extension)
+    {
+        if ($extension == static::PNG) {
+            imagesavealpha($this->resource, true);
+            imagepng($this->resource, $destination, 6);
+        } else {
+            imagejpeg($this->resource, $destination);
+        }
+    }
+
+    /**
+     * @param string|null $extension
+     * @return string
+     */
+    protected function getBytes($extension = null)
+    {
+        $extension = $extension ?? $this->extension;
+
+        ob_start();
+
+        $this->_save(null, $extension);
+
+        return ob_get_clean();
+    }
+
+    /**
+     * @param string|null $destination Image location
+     * @param string|null $extension Image extention (PNG or JPG)
+     */
+    public function save($destination = null, $extension = null)
+    {
+        $this->_save($destination ?? $this->file, $extension ?? $this->extension);
+    }
+
+    /**
      * Read-only getters
      * @param string $name
      * @return mixed
@@ -233,9 +284,7 @@ class Image
             $newY = $y;
         }
 
-        $newImageResource = imagecreatetruecolor($this->width, $this->height);
-        $transparentColor = imagecolorallocatealpha($newImageResource, 0, 0, 0, 127);
-        imagefill($newImageResource, 0, 0, $transparentColor);
+        $newImageResource = $this->createTransparentResource($this->width, $this->height);
 
         imagecopy($newImageResource, $this->resource, 0, 0, 0, 0, $this->width, $this->height);
 
@@ -252,42 +301,40 @@ class Image
      */
     public function resize($maxWidth = 1000, $maxHeight = 1000)
     {
-        $dstWidth = $this->width;
-        $dstHeight = $this->height;
+        $width = $this->width;
+        $height = $this->height;
 
         if ($this->width / $this->height >= 1) {
             if ($this->width > $maxWidth) {
                 $ratio = $maxWidth / $this->width;
-                $dstWidth = $maxWidth;
-                $dstHeight = (int)($this->height * $ratio);
+                $width = $maxWidth;
+                $height = (int)($this->height * $ratio);
             }
-            if ($dstHeight > $maxHeight) {
-                $ratio = $maxHeight / $dstHeight;
-                $dstHeight = $maxHeight;
-                $dstWidth = (int)($dstWidth * $ratio);
+            if ($height > $maxHeight) {
+                $ratio = $maxHeight / $height;
+                $height = $maxHeight;
+                $width = (int)($width * $ratio);
             }
         } else {
             if ($this->height > $maxHeight) {
                 $ratio = $maxHeight / $this->height;
-                $dstHeight = $maxHeight;
-                $dstWidth = (int)($this->width * $ratio);
+                $height = $maxHeight;
+                $width = (int)($this->width * $ratio);
             }
-            if ($dstWidth > $maxWidth) {
-                $ratio = $maxWidth / $dstWidth;
-                $dstWidth = $maxWidth;
-                $dstHeight = (int)($dstHeight * $ratio);
+            if ($width > $maxWidth) {
+                $ratio = $maxWidth / $width;
+                $width = $maxWidth;
+                $height = (int)($height * $ratio);
             }
         }
 
-        $dstResource = imagecreatetruecolor($dstWidth, $dstHeight);
-        $white = imagecolorallocate($dstResource, 255, 255, 255);
-        imagefill($dstResource, 0, 0, $white);
-        imagecopyresampled($dstResource, $this->resource, 0, 0, 0, 0, $dstWidth, $dstHeight, $this->width, $this->height);
+        $newImageResource = $this->createTransparentResource($width, $height);
+        imagecopyresampled($newImageResource, $this->resource, 0, 0, 0, 0, $width, $height, $this->width, $this->height);
 
         imagedestroy($this->resource);
-        $this->resource = $dstResource;
-        $this->width = $dstWidth;
-        $this->height = $dstHeight;
+        $this->resource = $newImageResource;
+        $this->width = $width;
+        $this->height = $height;
     }
 
     /**
@@ -315,31 +362,29 @@ class Image
         elseif ($y + $height > $this->height)
             $y = $this->height - $height;
 
-        $dstResource = imagecreatetruecolor($width, $height);
-        $white = imagecolorallocate($dstResource, 255, 255, 255);
-        imagefill($dstResource, 0, 0, $white);
-        imagecopy($dstResource, $this->resource, 0, 0, $x, $y, $width, $height);
+        $newImageResource = $this->createTransparentResource($width, $height);
+        imagecopy($newImageResource, $this->resource, 0, 0, $x, $y, $width, $height);
 
         imagedestroy($this->resource);
-        $this->resource = $dstResource;
+        $this->resource = $newImageResource;
         $this->width = $width;
         $this->height = $height;
     }
     /**
      * @param string $destination Thumb location
-     * @param int $thumbWidth Thumb width
-     * @param int $thumbHeight Thumb height
+     * @param int $width Thumb width
+     * @param int $height Thumb height
      * @param int $offsetX Thumb X Offset
      * @param int $offsetY Thumb Y Offset
      * @return void
      */
-    public function thumb($thumbWidth, $thumbHeight, $offsetX = 0, $offsetY = 0)
+    public function thumb($width, $height, $offsetX = 0, $offsetY = 0)
     {
         $cutWidth = $this->width;
         $cutHeight = $this->height;
 
-        $ratioHeightToWidth = $thumbWidth / $thumbHeight;
-        $ratioWidthToHeight = $thumbHeight / $thumbWidth;
+        $ratioHeightToWidth = $width / $height;
+        $ratioWidthToHeight = $height / $width;
 
         if ($cutWidth <= $cutHeight)
             $cutHeight = (int)($cutWidth * $ratioWidthToHeight);
@@ -370,52 +415,12 @@ class Image
         elseif ($startY + $cutHeight > $this->height)
             $startY = $this->height - $cutHeight;
 
-        $dstResource = imagecreatetruecolor($thumbWidth, $thumbHeight);
-        $white = imagecolorallocate($dstResource, 255, 255, 255);
-        imagefill($dstResource, 0, 0, $white);
-        imagecopyresampled($dstResource, $this->resource, 0, 0, $startX, $startY, $thumbWidth, $thumbHeight, $cutWidth, $cutHeight);
+        $newImageResource = $this->createTransparentResource($width, $height);
+        imagecopyresampled($newImageResource, $this->resource, 0, 0, $startX, $startY, $width, $height, $cutWidth, $cutHeight);
 
         imagedestroy($this->resource);
-        $this->resource = $dstResource;
-        $this->width = $thumbWidth;
-        $this->height = $thumbHeight;
-    }
-
-    /**
-     * @param string $destination Image location
-     * @param string $extension Image extention (PNG or JPG)
-     */
-    protected function _save($destination, $extension)
-    {
-        if ($extension == static::PNG) {
-            imagesavealpha($this->resource, true);
-            imagepng($this->resource, $destination, 6);
-        } else {
-            imagejpeg($this->resource, $destination);
-        }
-    }
-
-    /**
-     * @param string|null $destination Image location
-     * @param string|null $extension Image extention (PNG or JPG)
-     */
-    public function save($destination = null, $extension = null)
-    {
-        $this->_save($destination ?? $this->file, $extension ?? $this->extension);
-    }
-
-    /**
-     * @param string|null $extension
-     * @return string
-     */
-    protected function getBytes($extension = null)
-    {
-        $extension = $extension ?? $this->extension;
-
-        ob_start();
-
-        $this->_save(null, $extension);
-
-        return ob_get_clean();
+        $this->resource = $newImageResource;
+        $this->width = $width;
+        $this->height = $height;
     }
 }
