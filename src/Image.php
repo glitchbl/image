@@ -98,13 +98,34 @@ class Image
     }
 
     /**
+     * @param string|null $extension
+     * @return string
+     */
+    protected function getBytes($extension = null)
+    {
+        $extension = $extension ?? $this->extension;
+
+        ob_start();
+
+        if ($extension == static::PNG)
+            imagepng($this->resource, null, 6);
+        else
+            imagejpeg($this->resource);
+
+        return ob_get_clean();
+    }
+
+    /**
      * Read-only getters
      * @param string $name
      * @return mixed
      */
     public function __get($name)
     {
-        return $this->{$name};
+        if ($name == 'bytes')
+            return $this->getBytes();
+        else
+            return $this->{$name};
     }
 
     /**
