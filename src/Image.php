@@ -14,9 +14,10 @@ use Exception;
  */
 class Image
 {
-    const   GIF = 'gif',
-            PNG = 'png',
-            JPG = 'jpg';
+    const
+        GIF = 'gif',
+        PNG = 'png',
+        JPG = 'jpg';
 
     /**
      * @var mixed Image resource
@@ -225,10 +226,10 @@ class Image
 
         if ($fontSize == 'auto') {
             for ($i = 128; $i > 0; $i--) {
+                $fontSize = $i;
                 $bbox = imagettfbbox($i, 0, $fontPath, $text);
                 $textWidth = 0 - $bbox[0] + $bbox[2] + $padding * 2;
                 if ($textWidth < $width) {
-                    $fontSize = $i;
                     break;
                 }
             }
