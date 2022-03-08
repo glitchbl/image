@@ -314,6 +314,9 @@ class Image
      */
     public function resize($maxWidth = 1000, $maxHeight = 1000)
     {
+        if ($maxWidth < 1) $maxWidth = 1;
+        if ($maxHeight < 1) $maxHeight = 1;
+
         $width = $this->width;
         $height = $this->height;
 
