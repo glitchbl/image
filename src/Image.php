@@ -211,18 +211,30 @@ class Image
      * @param int $x
      * @param int $y
      * @param array $align
-     * @param int $fontSize
+     * @param int|string $fontSize
      * @param array $textColor
      * @param array $bgColor
      * @param int $padding
      */
-    public function addText($fontPath, $text, $x = 0, $y = 0, $align = ['top', 'left'], $fontSize = 32, $textColor = [255, 255, 255], $bgColor = [255, 255, 255, 127], $padding = 0)
+    public function addText($fontPath, $text, $x = 0, $y = 0, $align = ['top', 'left'], $fontSize = 'auto', $textColor = [255, 255, 255], $bgColor = [255, 255, 255, 127], $padding = 0)
     {
         if (!is_file($fontPath))
             throw new Exception("{$fontPath} does not exist");
 
-        $bbox = imagettfbbox($fontSize, 0, $fontPath, $text);
         $width = $this->width;
+
+        if ($fontSize == 'auto') {
+            for ($i = 128; $i > 0; $i--) {
+                $bbox = imagettfbbox($i, 0, $fontPath, $text);
+                $textWidth = 0 - $bbox[0] + $bbox[2] + $padding * 2;
+                if ($textWidth < $width) {
+                    $fontSize = $i;
+                    break;
+                }
+            }
+        }
+
+        $bbox = imagettfbbox((int)$fontSize, 0, $fontPath, $text);
         $height = 0 - $bbox[5] + $bbox[1] + $padding * 2;
 
         $imageText = imagecreatetruecolor($width, $height);
