@@ -10,7 +10,6 @@ use Exception;
  * @property-read int $height
  * @property-read string $extension
  * @property-read string $file
- * @property-read string $bytes
  */
 class Image
 {
@@ -132,10 +131,19 @@ class Image
     }
 
     /**
+     * @param string|null $destination Image location
+     * @param string|null $extension Image extention (PNG or JPG)
+     */
+    public function save($destination = null, $extension = null)
+    {
+        $this->_save($destination ?? $this->file, $extension ?? $this->extension);
+    }
+
+    /**
      * @param string|null $extension
      * @return string
      */
-    protected function getBytes($extension = null)
+    public function getBytes($extension = null)
     {
         $extension = $extension ?? $this->extension;
 
@@ -147,25 +155,13 @@ class Image
     }
 
     /**
-     * @param string|null $destination Image location
-     * @param string|null $extension Image extention (PNG or JPG)
-     */
-    public function save($destination = null, $extension = null)
-    {
-        $this->_save($destination ?? $this->file, $extension ?? $this->extension);
-    }
-
-    /**
      * Read-only getters
      * @param string $name
      * @return mixed
      */
     public function __get($name)
     {
-        if ($name == 'bytes')
-            return $this->getBytes();
-        else
-            return $this->{$name};
+        return $this->{$name};
     }
 
     /**
