@@ -218,45 +218,42 @@ class Image
         if (!is_file($fontPath))
             throw new Exception("{$fontPath} does not exist");
 
-        $width = $this->width;
-
         if ($fontSize == 'auto') {
             for ($i = 128; $i > 0; $i--) {
                 $fontSize = $i;
                 $bbox = imagettfbbox($i, 0, $fontPath, $text);
                 $textWidth = 0 - $bbox[0] + $bbox[2] + $padding * 2;
-                if ($textWidth < $width) {
+                if ($textWidth < $this->width) {
                     break;
                 }
             }
         }
 
         $bbox = imagettfbbox((int)$fontSize, 0, $fontPath, $text);
-        $height = 0 - $bbox[5] + $bbox[1] + $padding * 2;
 
-        $imageText = imagecreatetruecolor($width, $height);
+        $textHeight = 0 - $bbox[5] + $bbox[1] + $padding * 2;
+        $textWidth = $bbox[2];
+
+        $imageText = imagecreatetruecolor($this->width, $textHeight);
 
         $imageBgColor = imagecolorallocatealpha($imageText, $bgColor[0], $bgColor[1], $bgColor[2], $bgColor[3]);
         imagefill($imageText, 0, 0, $imageBgColor);
 
         if ($align[1] == 'center') {
-            $newX = round(($width - $bbox[2]) / 2);
+            $newX = round(($this->width - $textWidth) / 2);
         } elseif ($align[1] == 'right') {
-            $newX = $width - $bbox[2] - $x;
+            $newX = $this->width - $textWidth - $x - $padding;
         } else {
-            $newX = $x;
+            $newX = $x + $padding;
         }
 
         imagettftext($imageText, $fontSize, 0, $newX, 0 - $bbox[5] + $padding, imagecolorallocate($imageText, $textColor[0], $textColor[1], $textColor[2]), $fontPath, $text);
 
         $this->addImage($imageText, 0, $y, $align);
 
-        $width = imagesx($imageText);
-        $height = imagesy($imageText);
-
         imagedestroy($imageText);
 
-        return [$width, $height];
+        return [$textWidth, $textHeight];
     }
 
     /**
