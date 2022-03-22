@@ -16,7 +16,8 @@ class Image
     const
         GIF = 'gif',
         PNG = 'png',
-        JPG = 'jpg';
+        JPG = 'jpg',
+        WEBP = 'webp';
 
     /**
      * @var mixed Image resource
@@ -65,6 +66,10 @@ class Image
             case IMAGETYPE_PNG:
                 $this->resource = imagecreatefrompng($file);
                 $this->extension = self::PNG;
+                break;
+            case IMAGETYPE_WEBP:
+                $this->resource = imagecreatefromwebp($file);
+                $this->extension = self::WEBP;
                 break;
         }
 
